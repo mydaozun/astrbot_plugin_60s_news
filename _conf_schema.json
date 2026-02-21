@@ -31,7 +31,7 @@
   "api_type": {
     "description": "API接口类型",
     "type": "string",
-    "hint": "选择API接口类型：viki(默认) 或 alapi 或 lolimi",
+    "hint": "选择API接口类型：viki(默认，无需配置)、alapi(需要配置token)、lolimi(无需配置)",
     "options": [
       "viki",
       "alapi",
@@ -40,14 +40,14 @@
     "default": "viki"
   },
   "api_url": {
-    "description": "API接口地址",
+    "description": "API接口地址（仅alapi需要）",
     "type": "string",
-    "hint": "当api_type为alapi时使用，如: https://v2.alapi.cn/api/zaobao",
+    "hint": "当api_type为alapi时必填，如: https://v2.alapi.cn/api/zaobao",
     "obvious_hint": false,
     "default": "https://v2.alapi.cn/api/zaobao"
   },
   "api_token": {
-    "description": "API Token",
+    "description": "API Token（仅alapi需要）",
     "type": "string",
     "hint": "当api_type为alapi时必填，如: J65qJ1NpXo74DyEi",
     "obvious_hint": false,

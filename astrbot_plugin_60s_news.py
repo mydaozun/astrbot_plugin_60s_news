@@ -38,9 +38,26 @@ class Daily60sNewsPlugin(Star):
         self.api_type = getattr(self.config, "api_type", "viki")
         self.api_url = getattr(self.config, "api_url", "")
         self.api_token = getattr(self.config, "api_token", "")
+
+        # 配置验证
+        self._validate_config()
+
         logger.info(f"插件配置: {self.config}")
         # 启动定时任务
         self._monitoring_task = asyncio.create_task(self._daily_task())
+
+    def _validate_config(self):
+        """验证配置的有效性"""
+        if self.api_type == "alapi":
+            if not self.api_token:
+                logger.warning("[配置警告] API类型为 alapi，但未配置 api_token，可能导致请求失败")
+            if not self.api_url:
+                logger.warning("[配置警告] API类型为 alapi，但未配置 api_url，将使用默认值")
+        elif self.api_type in ["viki", "lolimi"]:
+            if self.api_token:
+                logger.info(f"[配置提示] API类型为 {self.api_type}，api_token 配置将被忽略")
+            if self.api_url and self.api_url != "https://v2.alapi.cn/api/zaobao":
+                logger.info(f"[配置提示] API类型为 {self.api_type}，api_url 配置将被忽略")
 
     @filter.command_group("新闻")
     def mnews(self):
