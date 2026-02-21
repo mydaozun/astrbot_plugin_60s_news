@@ -29,8 +29,9 @@
    - 默认使用 `viki` 接口（免费，无需配置）
    - 如需使用 `alapi` 接口，需要配置以下参数：
      - `api_type` 选择 `alapi`
-     - `api_url` 填写接口地址，如：`https://v3.alapi.cn/api/zaobao`
+     - `api_url` 填写接口地址，如：`https://v2.alapi.cn/api/zaobao`
      - `api_token` 填写您的 ALAPI Token，如：`J65qJ1NpXo74DyEi`
+   - ALAPI 支持文本和图片两种格式，通过 `news_type` 参数控制
 
 4. groups配置格式，在机器人所在群聊中发送"/sid"获取相关信息。其中SID为群聊ID，即配置页面中的groups参数
 /sid回复格式：

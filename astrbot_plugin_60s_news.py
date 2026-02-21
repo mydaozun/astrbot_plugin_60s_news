@@ -185,11 +185,12 @@ class Daily60sNewsPlugin(Star):
         else:
             return await self._download_news(path, news_type="image")
 
-    async def _download_from_alapi(self, news_type: str) -> str:
+    async def _download_from_alapi(self, news_type: str, path: str) -> str:
         """
         从 ALAPI 接口获取新闻内容
         :param news_type: 'text' 或 'image'
-        :return: 新闻文本内容
+        :param path: 保存路径
+        :return: 新闻文本内容或图片路径
         """
         if not self.api_url:
             raise Exception("ALAPI 接口地址未配置")
@@ -197,56 +198,91 @@ class Daily60sNewsPlugin(Star):
         if not self.api_token:
             raise Exception("ALAPI Token 未配置")
 
-        timeout = 5
+        timeout = 10
 
-        # 构造请求 URL
-        params = {"token": self.api_token}
+        # 构造请求 URL 和参数
+        params = {
+            "token": self.api_token,
+            "format": "image" if news_type == "image" else "text"
+        }
         url = self.api_url
 
-        logger.info(f"正在请求 ALAPI 接口: {url}")
+        logger.info(f"正在请求 ALAPI 接口: {url}?token={self.api_token}&format={params['format']}")
 
         async with aiohttp.ClientSession() as session:
             async with session.get(url, params=params, timeout=timeout) as response:
-                result = await response.json()
+                if response.status != 200:
+                    raise Exception(f"HTTP 状态码: {response.status}")
 
-                logger.info(f"ALAPI 响应: {result}")
+                content_type = response.headers.get("Content-Type", "")
 
-                # 检查响应状态
-                if result.get("code") == 200 and result.get("success"):
-                    # ALAPI 返回的数据在 data 字段中
-                    data = result.get("data", {})
+                # 根据返回类型处理
+                if "image" in content_type:
+                    # 返回的是图片
+                    image_data = await response.read()
+                    with open(path, "wb") as f:
+                        f.write(image_data)
+                    logger.info(f"已保存图片到: {path}")
+                    return path
+                elif "application/json" in content_type or "text" in content_type:
+                    # 返回的是 JSON 文本
+                    result = await response.json()
+                    logger.info(f"ALAPI 响应: {result}")
 
-                    # 构建新闻文本
-                    news_lines = []
+                    # 检查响应状态
+                    if result.get("code") == 200 and result.get("success"):
+                        # ALAPI 返回的数据在 data 字段中
+                        data = result.get("data", {})
 
-                    # 标题
-                    if "title" in data:
-                        news_lines.append(f"【{data['title']}】")
+                        # 如果 data 包含 URL，尝试下载图片
+                        if isinstance(data, str) and data.startswith("http"):
+                            logger.info(f"检测到图片 URL: {data}")
+                            async with session.get(data, timeout=timeout) as img_response:
+                                if img_response.status == 200:
+                                    image_data = await img_response.read()
+                                    with open(path, "wb") as f:
+                                        f.write(image_data)
+                                    logger.info(f"已保存图片到: {path}")
+                                    return path
+                                else:
+                                    raise Exception(f"图片下载失败: {img_response.status}")
 
-                    # 日期
-                    if "date" in data:
-                        news_lines.append(f"日期: {data['date']}")
+                        # 构建新闻文本
+                        news_lines = []
 
-                    # 新闻列表
-                    if "news" in data:
-                        for item in data["news"]:
-                            if isinstance(item, dict):
-                                if "content" in item:
-                                    news_lines.append(item["content"])
-                            elif isinstance(item, str):
-                                news_lines.append(item)
+                        # 标题
+                        if "title" in data:
+                            news_lines.append(f"【{data['title']}】")
 
-                    # 微博热搜
-                    if "weibo_hot" in data:
-                        news_lines.append("\n【微博热搜】")
-                        for item in data["weibo_hot"]:
-                            if isinstance(item, dict) and "title" in item:
-                                news_lines.append(f"{item.get('index', '')}. {item['title']}")
+                        # 日期
+                        if "date" in data:
+                            news_lines.append(f"日期: {data['date']}")
 
-                    return "\n".join(news_lines)
+                        # 新闻列表
+                        if "news" in data:
+                            for item in data["news"]:
+                                if isinstance(item, dict):
+                                    if "content" in item:
+                                        news_lines.append(item["content"])
+                                elif isinstance(item, str):
+                                    news_lines.append(item)
+
+                        # 微博热搜
+                        if "weibo_hot" in data:
+                            news_lines.append("\n【微博热搜】")
+                            for item in data["weibo_hot"]:
+                                if isinstance(item, dict) and "title" in item:
+                                    news_lines.append(f"{item.get('index', '')}. {item['title']}")
+
+                        content = "\n".join(news_lines)
+                        with open(path, "w", encoding="utf-8") as f:
+                            f.write(content)
+                        return content
+                    else:
+                        error_msg = result.get("message", "未知错误")
+                        raise Exception(f"ALAPI 返回错误: {error_msg} (code: {result.get('code')})")
                 else:
-                    error_msg = result.get("message", "未知错误")
-                    raise Exception(f"ALAPI 返回错误: {error_msg} (code: {result.get('code')})")
+                    raise Exception(f"不支持的 Content-Type: {content_type}")
 
     async def _download_news(self, path: str, news_type: str) -> Tuple[Any, bool]:
         """
@@ -262,19 +298,15 @@ class Daily60sNewsPlugin(Star):
             try:
                 if self.api_type == "alapi":
                     # 使用 ALAPI 接口
-                    content = await self._download_from_alapi(news_type)
-                    if not content:
+                    result = await self._download_from_alapi(news_type, path)
+                    if not result:
                         raise Exception("ALAPI 返回为空")
 
-                    with open(path, "w", encoding="utf-8") as f:
-                        f.write(content)
-
                     if news_type == "text":
-                        return content, True
+                        return result, True
                     else:
-                        # ALAPI 接口只返回文本，暂不支持图片
-                        logger.warning("[mnews] ALAPI 不支持图片格式，已返回文本")
-                        return content, True
+                        # 返回的是图片路径
+                        return result, True
                 else:
                     # 使用 viki 接口
                     url_type = "text" if news_type == "text" else "image-proxy"

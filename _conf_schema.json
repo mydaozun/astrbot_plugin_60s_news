@@ -41,9 +41,9 @@
   "api_url": {
     "description": "API接口地址",
     "type": "string",
-    "hint": "当api_type为alapi时使用，如: https://v3.alapi.cn/api/zaobao",
+    "hint": "当api_type为alapi时使用，如: https://v2.alapi.cn/api/zaobao",
     "obvious_hint": false,
-    "default": ""
+    "default": "https://v2.alapi.cn/api/zaobao"
   },
   "api_token": {
     "description": "API Token",
