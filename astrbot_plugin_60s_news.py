@@ -328,8 +328,6 @@ class Daily60sNewsPlugin(Star):
                     return path
                 else:
                     raise Exception(f"不支持的 Content-Type: {content_type}，期望图片格式")
-                else:
-                    raise Exception(f"不支持的 Content-Type: {content_type}")
 
     async def _download_news(self, path: str, news_type: str) -> Tuple[Any, bool]:
         """
