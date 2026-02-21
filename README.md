@@ -30,7 +30,7 @@
    - 如需使用 `alapi` 接口，需要配置以下参数：
      - `api_type` 选择 `alapi`
      - `api_url` 填写接口地址，如：`https://v2.alapi.cn/api/zaobao`
-     - `api_token` 填写您的 ALAPI Token，如：`J65156156154DyEi`
+     - `api_token` 填写您的 ALAPI Token，如：`J65125468154DyEi`
      - ALAPI 支持文本和图片两种格式，通过 `news_type` 参数控制
    - 如需使用 `lolimi` 接口：
      - `api_type` 选择 `lolimi`
