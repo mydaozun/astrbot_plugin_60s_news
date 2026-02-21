@@ -31,10 +31,11 @@
   "api_type": {
     "description": "API接口类型",
     "type": "string",
-    "hint": "选择API接口类型：viki(默认) 或 alapi",
+    "hint": "选择API接口类型：viki(默认) 或 alapi 或 lolimi",
     "options": [
       "viki",
-      "alapi"
+      "alapi",
+      "lolimi"
     ],
     "default": "viki"
   },

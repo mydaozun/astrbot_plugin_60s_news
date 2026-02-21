@@ -31,7 +31,11 @@
      - `api_type` 选择 `alapi`
      - `api_url` 填写接口地址，如：`https://v2.alapi.cn/api/zaobao`
      - `api_token` 填写您的 ALAPI Token，如：`J65qJ1NpXo74DyEi`
-   - ALAPI 支持文本和图片两种格式，通过 `news_type` 参数控制
+     - ALAPI 支持文本和图片两种格式，通过 `news_type` 参数控制
+   - 如需使用 `lolimi` 接口：
+     - `api_type` 选择 `lolimi`
+     - 该接口无需额外配置，直接返回图片格式
+     - 注意：lolimi 接口仅支持图片格式
 
 4. groups配置格式，在机器人所在群聊中发送"/sid"获取相关信息。其中SID为群聊ID，即配置页面中的groups参数
 /sid回复格式：

@@ -73,6 +73,8 @@ class Daily60sNewsPlugin(Star):
         api_info = f"API类型: {self.api_type}"
         if self.api_type == "alapi":
             api_info += f"\nAPI地址: {self.api_url}\nAPI Token: {'已配置' if self.api_token else '未配置'}"
+        elif self.api_type == "lolimi":
+            api_info += f"\nAPI地址: https://api.lolimi.cn/API/60s/daily_news"
 
         yield event.plain_result(
             f"每日60s新闻插件正在运行\n"
@@ -278,9 +280,37 @@ class Daily60sNewsPlugin(Star):
                         with open(path, "w", encoding="utf-8") as f:
                             f.write(content)
                         return content
-                    else:
-                        error_msg = result.get("message", "未知错误")
-                        raise Exception(f"ALAPI 返回错误: {error_msg} (code: {result.get('code')})")
+                else:
+                    error_msg = result.get("message", "未知错误")
+                    raise Exception(f"ALAPI 返回错误: {error_msg} (code: {result.get('code')})")
+
+    async def _download_from_lolimi(self, path: str) -> str:
+        """
+        从 LoliMi 接口获取新闻图片
+        :param path: 保存路径
+        :return: 图片路径
+        """
+        url = "https://api.lolimi.cn/API/60s/daily_news"
+        timeout = 10
+
+        logger.info(f"正在请求 LoliMi 接口: {url}")
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, timeout=timeout) as response:
+                if response.status != 200:
+                    raise Exception(f"HTTP 状态码: {response.status}")
+
+                content_type = response.headers.get("Content-Type", "")
+
+                if "image" in content_type:
+                    # 返回的是图片
+                    image_data = await response.read()
+                    with open(path, "wb") as f:
+                        f.write(image_data)
+                    logger.info(f"已保存图片到: {path}")
+                    return path
+                else:
+                    raise Exception(f"不支持的 Content-Type: {content_type}，期望图片格式")
                 else:
                     raise Exception(f"不支持的 Content-Type: {content_type}")
 
@@ -307,6 +337,12 @@ class Daily60sNewsPlugin(Star):
                     else:
                         # 返回的是图片路径
                         return result, True
+                elif self.api_type == "lolimi":
+                    # 使用 LoliMi 接口（只支持图片）
+                    result = await self._download_from_lolimi(path)
+                    if not result:
+                        raise Exception("LoliMi 返回为空")
+                    return result, True
                 else:
                     # 使用 viki 接口
                     url_type = "text" if news_type == "text" else "image-proxy"
