@@ -21,7 +21,7 @@
 
 1. 克隆或下载本插件到 AstrBot 插件（/data/plugin/）目录：
    ```bash
-   git clone https://github.com/CJSen/astrbot_plugin_60s_news.git
+   git clone https://github.com/mydaozun/astrbot_plugin_60s_news.git
    ```
 2. 进入AstrBot网页插件配置界面，调整相关配置，并保存。
 
