@@ -19,7 +19,7 @@ SAVED_NEWS_DIR.mkdir(parents=True, exist_ok=True)
 
 @register(
     "daily_60s_news",
-    "CJSen",
+    "daozun",
     "这是 AstrBot 的一个每日60s新闻插件。支持定时发送和命令发送",
     "1.0.0",
 )
