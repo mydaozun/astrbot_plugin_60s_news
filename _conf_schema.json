@@ -1,0 +1,55 @@
+{
+  "groups": {
+    "description": "需要推送60s新闻的群组唯一标识符列表",
+    "type": "list",
+    "hint": "填写需要接收60s新闻推送的群组唯一标识符，如: wechatpadpro:GroupMessage:575xxxx1665@chatroom",
+    "obvious_hint": true,
+    "default": ["wechatpadpro:GroupMessage:你的群号@chatroom"]
+  },
+  "news_type": {
+    "description": "news_type",
+    "type": "string",
+    "hint": "新闻的发送方式",
+    "options": [
+      "text",
+      "image"
+    ],
+    "default": "text"
+  },
+  "push_time": {
+    "description": "推送时间(以服务器时区为准)",
+    "type": "string",
+    "hint": "填写推送的时间，如: 08:00,18:00",
+    "default": "08:00"
+  },
+  "save_days": {
+    "description": "保存多久的新闻",
+    "type": "int",
+    "hint": "填写需要保留的新闻时间，单位为天.默认保留30天",
+    "default": 30
+  },
+  "api_type": {
+    "description": "API接口类型",
+    "type": "string",
+    "hint": "选择API接口类型：viki(默认) 或 alapi",
+    "options": [
+      "viki",
+      "alapi"
+    ],
+    "default": "viki"
+  },
+  "api_url": {
+    "description": "API接口地址",
+    "type": "string",
+    "hint": "当api_type为alapi时使用，如: https://v3.alapi.cn/api/zaobao",
+    "obvious_hint": false,
+    "default": ""
+  },
+  "api_token": {
+    "description": "API Token",
+    "type": "string",
+    "hint": "当api_type为alapi时必填，如: J65qJ1NpXo74DyEi",
+    "obvious_hint": false,
+    "default": ""
+  }
+}
