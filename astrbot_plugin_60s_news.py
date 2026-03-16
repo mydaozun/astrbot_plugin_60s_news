@@ -420,7 +420,7 @@ class Daily60sNewsPlugin(Star):
         计算距离下次推送的秒数
         :return: 距离下次推送的秒数
         """
-        now = datetime.datetime.now()
+        现在 = datetime.datetime。now()
         hour, minute = map(int, self.push_time.split(":"))
         next_push = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
         if next_push <= now:
@@ -431,7 +431,7 @@ class Daily60sNewsPlugin(Star):
         """
         删除过期新闻文件
         """
-        save_days = self.config。save_days
+        save_days = self.config.save_days
         if save_days <= 0:
             raise ValueError("保存天数不能小于0")
         for filename in os.listdir(self.news_path):
