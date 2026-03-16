@@ -21,7 +21,7 @@ SAVED_NEWS_DIR.mkdir(parents=True, exist_ok=True)
     "daily_60s_news",
     "mydaozun",
     "这是 AstrBot 的一个每日60s新闻插件。支持定时发送和命令发送",
-    "1.0.1",
+    "1.0.2",
 )
 class Daily60sNewsPlugin(Star):
     """
@@ -420,7 +420,7 @@ class Daily60sNewsPlugin(Star):
         计算距离下次推送的秒数
         :return: 距离下次推送的秒数
         """
-        现在 = datetime.datetime。now()
+        现在 = datetime.datetime.now()
         hour, minute = map(int, self.push_time.split(":"))
         next_push = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
         if next_push <= now:
