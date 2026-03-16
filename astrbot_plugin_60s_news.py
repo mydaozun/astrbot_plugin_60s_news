@@ -279,7 +279,7 @@ class Daily60sNewsPlugin(Star):
 
                         # 新闻列表
                         if "news" in data:
-                            for item 在 data["news"]:
+                            for item in data["news"]:
                                 if isinstance(item, dict):
                                     if "content" in item:
                                         news_lines.append(item["content"])
