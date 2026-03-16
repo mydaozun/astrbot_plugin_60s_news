@@ -279,7 +279,7 @@ class Daily60sNewsPlugin(Star):
 
                         # 新闻列表
                         if "news" in data:
-                            for item in data["news"]:
+                            for item 在 data["news"]:
                                 if isinstance(item, dict):
                                     if "content" in item:
                                         news_lines.append(item["content"])
@@ -431,7 +431,7 @@ class Daily60sNewsPlugin(Star):
         """
         删除过期新闻文件
         """
-        save_days = self.config.save_days
+        save_days = self.config。save_days
         if save_days <= 0:
             raise ValueError("保存天数不能小于0")
         for filename in os.listdir(self.news_path):
@@ -455,7 +455,8 @@ class Daily60sNewsPlugin(Star):
                 await self._update_news_files()
                 await self._delete_expired_news_files()
                 await self._send_daily_news_to_groups()
-                await asyncio.sleep(60)  # 避免重复推送
+                next_sleep = self._calculate_sleep_time()
+                await asyncio.sleep(next_sleep)
             except Exception as e:
                 logger.error(f"[每日新闻] 定时任务出错: {e}")
                 traceback.print_exc()
