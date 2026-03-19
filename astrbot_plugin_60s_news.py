@@ -21,7 +21,7 @@ SAVED_NEWS_DIR.mkdir(parents=True, exist_ok=True)
     "daily_60s_news",
     "mydaozun",
     "这是 AstrBot 的一个每日60s新闻插件。支持定时发送和命令发送",
-    "1.0.2",
+    "1.0.3",
 )
 class Daily60sNewsPlugin(Star):
     """
@@ -74,8 +74,11 @@ class Daily60sNewsPlugin(Star):
             news_content, _ = await self._get_text_news()
             yield event.plain_result(news_content)
         else:
-            news_path, _ = await self._get_image_news()
-            yield event.image_result(news_path)
+            news_path, success = await self._get_image_news()
+            if success:
+                yield event.image_result(news_path)
+            else:
+                yield event.plain_result(news_path)
 
     @filter.permission_type(filter.PermissionType.ADMIN)
     @mnews.command("status")
@@ -134,8 +137,11 @@ class Daily60sNewsPlugin(Star):
         """
         在当前聊天页面获取今日60s新闻-图片
         """
-        news_path, _ = await self._get_image_news()
-        yield event.image_result(news_path)
+        news_path, success = await self._get_image_news()
+        if success:
+            yield event.image_result(news_path)
+        else:
+            yield event.plain_result(news_path)
 
     @filter.permission_type(filter.PermissionType.ADMIN)
     @mnews.command("update_news")
@@ -202,7 +208,12 @@ class Daily60sNewsPlugin(Star):
         if self._file_exists(path):
             return path, True
         else:
-            return await self._download_news(path, news_type="image")
+            result, success = await self._download_news(path, news_type="image")
+            if success:
+                return result, True
+            else:
+                # 返回错误信息，但保持格式一致
+                return result, False
 
     async def _download_from_alapi(self, news_type: str, path: str) -> str:
         """
@@ -400,12 +411,17 @@ class Daily60sNewsPlugin(Star):
                     logger.info(f"[每日新闻] 推送文本新闻: {news_content[:50]}...")
                     await self.context.send_message(target, message_chain)
                 else:
-                    news_path, _ = await self._get_image_news()
-                    message_chain = (
-                        MessageChain().message("每日新闻播报：").file_image(news_path)
-                    )
-                    logger.info(f"[每日新闻] 推送图片新闻: {news_path}")
-                    await self.context.send_message(target, message_chain)
+                    news_path, success = await self._get_image_news()
+                    if success:
+                        message_chain = (
+                            MessageChain().message("每日新闻播报：").file_image(news_path)
+                        )
+                        logger.info(f"[每日新闻] 推送图片新闻: {news_path}")
+                        await self.context.send_message(target, message_chain)
+                    else:
+                        message_chain = MessageChain().message(f"图片新闻下载失败: {news_path}")
+                        logger.error(f"[每日新闻] 推送图片新闻失败: {news_path}")
+                        await self.context.send_message(target, message_chain)
                 logger.info(f"[每日新闻] 已向{target}推送定时新闻。")
                 await asyncio.sleep(2)  # 防止推送过快
             except Exception as e:
@@ -420,7 +436,7 @@ class Daily60sNewsPlugin(Star):
         计算距离下次推送的秒数
         :return: 距离下次推送的秒数
         """
-        现在 = datetime.datetime.now()
+        now = datetime.datetime.now()
         hour, minute = map(int, self.push_time.split(":"))
         next_push = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
         if next_push <= now:
