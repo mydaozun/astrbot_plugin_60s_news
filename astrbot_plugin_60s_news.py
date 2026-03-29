@@ -471,8 +471,6 @@ class Daily60sNewsPlugin(Star):
                 await self._update_news_files()
                 await self._delete_expired_news_files()
                 await self._send_daily_news_to_groups()
-                next_sleep = self._calculate_sleep_time()
-                await asyncio.sleep(next_sleep)
             except Exception as e:
                 logger.error(f"[每日新闻] 定时任务出错: {e}")
                 traceback.print_exc()
