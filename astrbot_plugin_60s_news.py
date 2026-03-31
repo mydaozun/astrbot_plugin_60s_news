@@ -21,7 +21,7 @@ SAVED_NEWS_DIR.mkdir(parents=True, exist_ok=True)
     "daily_60s_news",
     "mydaozun",
     "这是 AstrBot 的一个每日60s新闻插件。支持定时发送和命令发送",
-    "1.0.3",
+    "1.0.5",
 )
 class Daily60sNewsPlugin(Star):
     """
