@@ -21,7 +21,7 @@ SAVED_NEWS_DIR.mkdir(parents=True, exist_ok=True)
     "daily_60s_news",
     "mydaozun",
     "这是 AstrBot 的一个每日60s新闻插件。支持定时发送和命令发送",
-    "1.0.5",
+    "1.0.6",
 )
 class Daily60sNewsPlugin(Star):
     """
@@ -369,25 +369,14 @@ class Daily60sNewsPlugin(Star):
                     if not result:
                         raise Exception("LoliMi 返回为空")
                     return result, True
-                else:
+                elif self.api_type == "viki":
                     # 使用 viki 接口
-                    url_type = "text" if news_type == "text" else "image-proxy"
-                    date = datetime.datetime.now().strftime("%Y-%m-%d")
-                    url = f"https://60s-api.viki.moe/v2/60s?date={date}&encoding={url_type}"
-                    logger.info(f"开始下载新闻文件:{url}...")
-
-                    async with aiohttp.ClientSession() as session:
-                        async with session.get(url, timeout=timeout) as response:
-                            if response.status == 200:
-                                content = await response.read()
-                                with open(path, "wb") as f:
-                                    f.write(content)
-                                if news_type == "text":
-                                    return content.decode("utf-8"), True
-                                else:
-                                    return path, True
-                            else:
-                                raise Exception(f"API返回错误代码: {response.status}")
+                    result = await self._download_from_viki(news_type, path)
+                    if not result:
+                        raise Exception("viki 返回为空")
+                    return result, True
+                else:
+                    raise Exception(f"不支持的 API 类型: {self.api_type}")
 
             except Exception as e:
                 logger.error(
@@ -398,6 +387,36 @@ class Daily60sNewsPlugin(Star):
                     content = f"接口报错，请联系管理员:{e}"
                     return content, False
                 await asyncio.sleep(1)
+
+    async def _download_from_viki(self, news_type: str, path: str) -> str:
+        """
+        从 viki 接口获取新闻内容
+        :param news_type: 'text' 或 'image'
+        :param path: 保存路径
+        :return: 新闻文本内容或图片路径
+        """
+        timeout = 10
+        date = datetime.datetime.now().strftime("%Y-%m-%d")
+        url_type = "text" if news_type == "text" else "image"
+        url = f"https://60s-api.viki.moe/v2/60s?date={date}&encoding={url_type}"
+        logger.info(f"正在请求 viki 接口: {url}")
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, timeout=timeout) as response:
+                logger.info(f"[viki] 请求 URL: {url}, 状态码: {response.status}")
+                if response.status != 200:
+                    error_text = ""
+                    try:
+                        error_text = await response.text()
+                    except Exception:
+                        pass
+                    raise Exception(f"HTTP 状态码: {response.status}, 响应: {error_text[:200]}")
+
+                content = await response.read()
+                with open(path, "wb") as f:
+                    f.write(content)
+                logger.info(f"已保存{news_type}新闻到: {path}")
+                return content.decode("utf-8") if news_type == "text" else path
 
     async def _send_daily_news_to_groups(self):
         """
